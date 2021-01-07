@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { NavLink, Switch, Route } from 'react-router-dom';
 import Inicio from './Componentes/Inicio';
@@ -6,85 +6,36 @@ import Blog from './Componentes/Blog';
 import Tienda from './Componentes/Tienda';
 import Error404 from './Componentes/Error404';
 import Carrito from './Componentes/Carrito';
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+import reducer from './Reducers/tiendaReducer';
 
 const App = () => {
+  // El reducer es una funcion, se usa para editar el estado global
 
-  const productos = [
-    { id: 1, nombre: 'Producto 1' },
-    { id: 2, nombre: 'Producto 2' },
-    { id: 3, nombre: 'Producto 3' },
-    { id: 4, nombre: 'Producto 4' }
-  ];
-
-  const [carrito, cambiarCarrito] = useState([]);
-
-  const agregarProductoAlCarrito = (idProductoAAgregar, nombre) => {
-    //Si el carrito no tiene elemento le agregamos uno.
-    if (carrito.length === 0) {
-      cambiarCarrito([
-        {
-          id: idProductoAAgregar,
-          nombre: nombre,
-          cantidad: 1
-        }
-      ]);
-    } else {
-      //De otra forma tenemos que revisar que el carrito no tenga el producto que queremos agregar
-      //Si ya lo tiene entonces queremos actualizar su valor
-      //Si no tiene el producto entonces lo agregamos
-
-      //Para poder editar el arreglo tenemos que clonarlo
-      const nuevoCarrito = [...carrito];
-
-      //Comprobamos si el carrito ya tiene el ID del producto a agregar
-      const yaEstaEnCarrito = nuevoCarrito.filter((productoDeCarrito) => {
-        return productoDeCarrito.id === idProductoAAgregar
-      }).length > 0;
-      //Si ya tiene el producto lo tenemos que actualizar
-      if (yaEstaEnCarrito) {
-        //Para ello tenemos que buscarlo, obtener su posicion en el arreglo
-        //Y en base a su posicion ya actualizamos el valor.
-        //El forEach nos permite realizar una funcion por cada objeto del arreglo
-        nuevoCarrito.forEach((productoDeCarrito, index) => {
-          if (productoDeCarrito.id === idProductoAAgregar) {
-            const cantidad = nuevoCarrito[index].cantidad;
-            nuevoCarrito[index] = { id: idProductoAAgregar, nombre: nombre, cantidad: cantidad + 1 }
-          }
-        });
-        // De otra forma agregamos el producto al arreglo
-      } else {
-        nuevoCarrito.push(
-          { id: idProductoAAgregar, nombre: nombre, cantidad: 1 }
-        )
-      }
-
-      //Por ultimo actualizamos el carrito
-      cambiarCarrito(nuevoCarrito);
-
-    }
-  }
+  const store = createStore(reducer);
 
   return (
-    <Contenedor>
-      <Menu>
-        <NavLink to="/">Inicio</NavLink>
-        <NavLink to="/blog">Blog</NavLink>
-        <NavLink to="/tienda">Tienda</NavLink>
-      </Menu>
-      <main>
-        <Switch>
-          <Route path="/" exact={true} component={Inicio} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/tienda">
-            <Tienda productos={productos} agregarProductoAlCarrito={agregarProductoAlCarrito} />
-          </Route>
-          <Route component={Error404} />
-        </Switch>
-      </main>
-      <aside>
-        <Carrito carrito={carrito} />
-      </aside>
-    </Contenedor>
+    <Provider store={store}>
+      <Contenedor>
+        <Menu>
+          <NavLink to="/">Inicio</NavLink>
+          <NavLink to="/blog">Blog</NavLink>
+          <NavLink to="/tienda">Tienda</NavLink>
+        </Menu>
+        <main>
+          <Switch>
+            <Route path="/" exact={true} component={Inicio} />
+            <Route path="/blog" component={Blog} />
+            <Route path="/tienda" component={Tienda} />
+            <Route component={Error404} />
+          </Switch>
+        </main>
+        <aside>
+          <Carrito />
+        </aside>
+      </Contenedor>
+    </Provider>
   );
 }
 
